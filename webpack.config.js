@@ -1,37 +1,50 @@
+const { resolve } = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
-const path = require("path");
+const TerserWebpackPlugin = require("terser-webpack-plugin");
 
-module.exports = {
-  entry: "./src/index.js",
-  output: {
-    filename: "bundle.[hash].js",
-    path: path.resolve(__dirname, "dist"),
+const isProd = process.env.NODE_ENV === "production";
+
+const config = {
+  mode: isProd ? "production" : "development",
+  entry: {
+    index: "./src/index.tsx",
   },
-  mode: "development",
-  plugins: [
-    new HtmlWebpackPlugin({
-      template: "./src/index.html",
-    }),
-  ],
+  output: {
+    path: resolve(__dirname, "dist"),
+    filename: "bundle.js",
+  },
   resolve: {
-    modules: [__dirname, "src", "node_modules"],
-    extensions: ["*", ".js", ".jsx", ".tsx", ".ts"],
+    extensions: [".js", ".jsx", ".ts", ".tsx"],
   },
   module: {
     rules: [
       {
-        test: /\.jsx?$/,
+        test: /\.tsx?$/,
+        use: "babel-loader",
         exclude: /node_modules/,
-        loader: require.resolve("babel-loader"),
       },
-      {
-        test: /\.css$/,
-        use: ["style-loader", "css-loader"],
-      },
-      {
-        test: /\.png|svg|jpg|gif$/,
-        use: ["file-loader"],
-      }, 
     ],
   },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: "./src/index.html",
+      filename: "index.html",
+      inject: "body",
+    }),
+  ],
 };
+
+if (isProd) {
+  config.optimization = {
+    minimizer: [new TerserWebpackPlugin()],
+  };
+} else {
+  config.devServer = {
+    port: 9000,
+    open: true,
+    hot: true,
+    compress: true,
+  };
+}
+
+module.exports = config;
