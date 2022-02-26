@@ -16,6 +16,7 @@ The app is available [online](https://mcdevon.github.io/dither-paint/).
 
 - Draw position tool
 - Change draw direction
+- Choose canvas size
 - Insert tool
 - Eraser
 - Preview with animation and slider
