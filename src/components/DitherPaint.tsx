@@ -1,11 +1,14 @@
 import React from "react";
 import StateModel from "../Utils/StateModel";
 import UndoableStorage from "../Utils/UndoableStorage";
+import Button from "./Button";
+import "./DitherPaint.css";
 
 const pixelSize = 16;
 
 class DitherPaint extends React.Component {
   canvasElement: React.RefObject<HTMLCanvasElement>;
+  exportCanvasElement: React.RefObject<HTMLCanvasElement>;
   storage: UndoableStorage<StateModel> = new UndoableStorage(
     new StateModel(16, 16, 256),
     30
@@ -18,9 +21,12 @@ class DitherPaint extends React.Component {
 
   drawStateDirty: boolean = false;
 
+  exportSelected: (event: React.MouseEvent) => void;
+
   constructor(props: {}) {
     super(props);
     this.canvasElement = React.createRef();
+    this.exportCanvasElement = React.createRef();
 
     const paint = (x: number, y: number) => {
       const state = this.storage.state;
@@ -88,13 +94,15 @@ class DitherPaint extends React.Component {
       this.isMouseDown = true;
       mouseAct(event.clientX, event.clientY);
     };
-    this.mouseUpListener = (event: MouseEvent) => {
+    this.mouseUpListener = (_: MouseEvent) => {
+      if (!this.isMouseDown) {
+        return;
+      }
       this.isMouseDown = false;
       if (this.drawStateDirty) {
         this.storage.saveUndoState();
         this.drawStateDirty = false;
       } else {
-        console.log("Draw state not dirty");
       }
     };
     this.mouseMoveListener = (event: MouseEvent) => {
@@ -131,23 +139,46 @@ class DitherPaint extends React.Component {
       }
     };
 
-    this.storage.subscribe((value: StateModel) => {
-      const ctx = this.canvasElement.current?.getContext("2d");
+    const drawToCanvas = (
+      canvas: HTMLCanvasElement,
+      state: StateModel,
+      size: number,
+      bgColor: string
+    ) => {
+      const ctx = canvas.getContext("2d");
       if (ctx === null || ctx === undefined) {
         return;
       }
-      for (let i = 0; i < value.width * value.height; ++i) {
+      for (let i = 0; i < state.width * state.height; ++i) {
         let color =
-          value.values[i] == null
-            ? "#FF00FF"
-            : `rgb(${value.values[i]}, ${value.values[i]}, ${value.values[i]})`;
-        const x = i % value.width;
-        const y = Math.floor(i / value.width);
+          state.values[i] == null
+            ? bgColor
+            : `rgb(${state.values[i]}, ${state.values[i]}, ${state.values[i]})`;
+        const x = i % state.width;
+        const y = Math.floor(i / state.width);
 
         ctx.fillStyle = color;
-        ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
+        ctx.fillRect(x * size, y * size, size, size);
       }
+    };
+
+    this.storage.subscribe((value: StateModel) => {
+      const canvas = this.canvasElement.current;
+      if (canvas === null || canvas === undefined) {
+        return;
+      }
+      drawToCanvas(canvas, value, pixelSize, "#FF00FF");
     });
+
+    this.exportSelected = (_: React.MouseEvent) => {
+      const canvas = this.exportCanvasElement.current;
+      if (canvas === null || canvas === undefined) {
+        return;
+      }
+      drawToCanvas(canvas, this.storage.state, 1, "#FFFFFF");
+      const image = canvas.toDataURL("image/png");
+      (document.getElementById("exportImage") as HTMLImageElement).src = image;
+    };
 
     this.storage.saveUndoState();
   }
@@ -190,6 +221,21 @@ class DitherPaint extends React.Component {
           ref={this.canvasElement}
           width={this.storage.state.width * pixelSize}
           height={this.storage.state.height * pixelSize}
+        />
+        <canvas
+          ref={this.exportCanvasElement}
+          width={this.storage.state.width}
+          height={this.storage.state.height}
+          style={{ display: "none" }}
+        />
+        <Button
+          {...{ onClick: this.exportSelected, text: "Export", disabled: false }}
+        />
+        <img
+          id="exportImage"
+          width={this.storage.state.width * 4}
+          height={this.storage.state.height * 4}
+          className="crispy"
         />
       </div>
     );
