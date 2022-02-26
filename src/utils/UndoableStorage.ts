@@ -17,16 +17,22 @@ export default class UndoableStorage<Type> {
   }
 
   action(action: (value: Type) => Type) {
-    this.undoHistory.put(this._state);
     this._state = action(this._state);
     this.subscribers.forEach((callback) => callback(this._state));
+  }
+
+  saveUndoState() {
+    this.undoHistory.put(this._state);
   }
 
   undo() {
     if (this.undoHistory.count === 0) {
       return;
     }
-    const previousState = this.undoHistory.popHead();
+    if (this.undoHistory.count > 1) {
+      this.undoHistory.popHead();
+    }
+    const previousState = this.undoHistory.getHead();
     if (previousState === null) {
       return;
     }

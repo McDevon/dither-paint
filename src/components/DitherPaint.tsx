@@ -4,13 +4,6 @@ import UndoableStorage from "../Utils/UndoableStorage";
 
 const pixelSize = 16;
 
-interface KeyEvent {
-  readonly ctrlKey: boolean;
-  readonly key: string;
-  /** @deprecated */
-  readonly keyCode: number;
-}
-
 class DitherPaint extends React.Component {
   canvasElement: React.RefObject<HTMLCanvasElement>;
   storage: UndoableStorage<StateModel> = new UndoableStorage(
@@ -22,6 +15,8 @@ class DitherPaint extends React.Component {
   mouseUpListener: (event: MouseEvent) => void;
   mouseMoveListener: (event: MouseEvent) => void;
   keyboardListener: (event: KeyboardEvent) => void;
+
+  drawStateDirty: boolean = false;
 
   constructor(props: {}) {
     super(props);
@@ -58,6 +53,7 @@ class DitherPaint extends React.Component {
           ret.position = next;
           return ret;
         });
+        this.drawStateDirty = true;
       }
     };
 
@@ -94,6 +90,12 @@ class DitherPaint extends React.Component {
     };
     this.mouseUpListener = (event: MouseEvent) => {
       this.isMouseDown = false;
+      if (this.drawStateDirty) {
+        this.storage.saveUndoState();
+        this.drawStateDirty = false;
+      } else {
+        console.log("Draw state not dirty");
+      }
     };
     this.mouseMoveListener = (event: MouseEvent) => {
       if (!this.isMouseDown) {
@@ -146,6 +148,8 @@ class DitherPaint extends React.Component {
         ctx.fillRect(x * pixelSize, y * pixelSize, pixelSize, pixelSize);
       }
     });
+
+    this.storage.saveUndoState();
   }
 
   resetCanvas() {
