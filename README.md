@@ -4,16 +4,16 @@ Dither Paint is an online app for drawing grayscale dither patterns.
 
 ## Online app
 
-The app will be available online once the basic features, including png export, work.
+The app is available [online](https://mcdevon.github.io/dither-paint/).
 
 ## Features
 
 - Draw dither patterns with easy paint tools
-- Undo
+- Undo with ctrl+z
+- PNG export
 
 ## Backlog
 
-- PNG export
 - Draw position tool
 - Change draw direction
 - Insert tool
