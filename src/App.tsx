@@ -1,6 +1,6 @@
 import React from "react";
-import DitherPaint from "./components/DitherPaint";
+import DitherPreview from "./components/DitherPreview";
 
-const App: React.FC = (props) => <DitherPaint />;
+const App: React.FC = (_props) => <DitherPreview />;
 
 export default App;
