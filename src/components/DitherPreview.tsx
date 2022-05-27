@@ -170,8 +170,8 @@ class DitherPreview extends React.Component {
         />
         <ReactSlider
           className="horizontal-slider"
-          thumbClassName="example-thumb"
-          trackClassName="example-track"
+          thumbClassName="slider-thumb"
+          trackClassName="slider-track"
           min={0}
           max={256}
           renderThumb={(props, state) => <div {...props}>{state.valueNow}</div>}
