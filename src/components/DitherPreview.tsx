@@ -6,7 +6,7 @@ import Button from "./Button";
 import "./DitherPaint.css";
 
 const pixelSize = 16;
-const maxImageSize = 16;
+const maxImageSize = 32;
 const previewPixelSize = 4;
 const previewGridSize = 3;
 
@@ -55,6 +55,8 @@ class DitherPreview extends React.Component {
     this.imageSet = (event: React.ChangeEvent<HTMLInputElement>) => {
       let img = new Image();
       img.onload = () => {
+        this.image = img;
+        this.forceUpdate();
         this.model.setImage(img);
         this.resetCanvas();
         const canvas = this.canvasElement.current;

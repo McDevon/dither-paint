@@ -1,16 +1,35 @@
+import { runInThisContext } from "vm";
+
 type PaintDirection = 1 | -1;
 
 export default class StateModel {
   public direction: PaintDirection = 1;
   public position: number = 0;
-  public values: Array<number>;
+
+  private _width: number;
+  private _height: number;
+  private _values: Array<number>;
+
+  public get width(): number {
+    return this._width;
+  }
+
+  public get height(): number {
+    return this._height;
+  }
+
+  public get values(): Array<number> {
+    return this._values;
+  }
 
   constructor(
-    public readonly width: number = 16,
-    public readonly height: number = 16,
+    width: number = 16,
+    height: number = 16,
     public levels: number = width * height
   ) {
-    this.values = new Array(width * height);
+    this._width = width;
+    this._height = height;
+    this._values = new Array(width * height);
   }
 
   public setImage(image: HTMLImageElement): void {
@@ -19,6 +38,9 @@ export default class StateModel {
     if (!context) {
       return;
     }
+    this._width = image.width;
+    this._height = image.height;
+    this._values = new Array(this.width * this.height);
     canvas.width = this.width;
     canvas.height = this.height;
     context.drawImage(image, 0, 0);
